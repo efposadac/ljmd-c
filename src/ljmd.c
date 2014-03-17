@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <math.h>
+#include <sys/time.h>
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -75,8 +76,16 @@ static int get_a_line(FILE *fp, char *buf)
     }
     return 0;
 }
+
  
 /* helper function: zero out an array */
+static double wallclock(void)
+{
+  struct timeval t;
+  gettimeofday(&t,0);
+  return((double) t.tv_sec) + 1.0e-6 * ((duble) t.tv_usec);
+}
+
 __attribute__((always_inline))
 static void azzero(double *d, const int n)
 {
@@ -452,7 +461,9 @@ int main(int argc, char **argv)
     char restfile[BLEN], trajfile[BLEN], ergfile[BLEN], line[BLEN];
     FILE *fp,*traj,*erg;
     mdsys_t sys;
+    double t_start;
 
+    t_start = wallclock();
 #if defined(_OPENMP)
 #pragma omp parallel
     {
@@ -522,10 +533,15 @@ int main(int argc, char **argv)
     
     erg=fopen(ergfile,"w");
     traj=fopen(trajfile,"w");
+    printf("Start up time: %10.3fs \n",wallclock()-t_start);
 
     printf("Starting simulation with %d atoms for %d steps.\n",sys.natoms, sys.nsteps);
     printf("     NFI            TEMP            EKIN                 EPOT              ETOT\n");
     output(&sys, erg, traj);
+
+    /*reset timer*/
+    t_star = wallclock();
+      
 
     /**************************************************/
     /* main MD loop */
@@ -546,7 +562,7 @@ int main(int argc, char **argv)
     /**************************************************/
 
     /* clean up: close files, free memory */
-    printf("Simulation Done.\n");
+    printf("Simulation Done. Run time : %10.3fs\n", wallclock()-t_start);
     fclose(erg);
     fclose(traj);
     free(sys.pos);
