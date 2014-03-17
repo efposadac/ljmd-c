@@ -10,6 +10,8 @@
 #include <math.h>
 #include <sys/time.h>
 
+#define LJMD_VERSION "ljmd-c AK v0.1"
+
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
@@ -463,6 +465,9 @@ int main(int argc, char **argv)
     char restfile[BLEN], trajfile[BLEN], ergfile[BLEN], line[BLEN];
     FILE *fp,*traj,*erg;
     mdsys_t sys;
+
+    puts(LJMD_VERSION);
+    
     double t_start;
 
     t_start = wallclock();
